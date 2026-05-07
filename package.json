@@ -1,0 +1,37 @@
+{
+  "name": "autocore-command-center",
+  "version": "0.1.0",
+  "license": "MIT",
+  "private": false,
+  "type": "module",
+  "scripts": {
+    "backend": "python -m autocore.server",
+    "build:public": "node scripts/build-public.mjs",
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "start": "python -m autocore.server",
+    "start:local": "node scripts/start-local.mjs",
+    "start:public": "node scripts/start-public.mjs",
+    "start:live": "node scripts/start-live.mjs",
+    "start:contained": "node scripts/start-live.mjs --containment",
+    "export:demo": "python scripts/export_demo_snapshot.py",
+    "deploy:build": "npm ci && npm run build",
+    "verify": "npm run test:backend && npm run build",
+    "verify:release": "node scripts/verify-release.mjs",
+    "test:backend": "python -m unittest tests.test_backend -v"
+  },
+  "dependencies": {
+    "lucide-react": "^0.561.0",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.1",
+    "@types/node": "^25.0.3",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.4"
+  }
+}

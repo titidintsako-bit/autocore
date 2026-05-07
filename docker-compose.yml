@@ -1,0 +1,11 @@
+services:
+  autocore:
+    build: .
+    ports:
+      - "8787:8787"
+    environment:
+      AUTOCORE_MODE: public
+      AUTOCORE_HOST: 0.0.0.0
+      AUTOCORE_PORT: 8787
+      AUTOCORE_STATIC_DIR: /app/dist
+      AUTOCORE_ALLOWED_ORIGINS: "*"

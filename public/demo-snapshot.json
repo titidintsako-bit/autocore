@@ -1,0 +1,680 @@
+{
+  "demo": {
+    "mode": "demo",
+    "read_only": true,
+    "public_safe": true,
+    "case_study": {
+      "title": "AutoCore evidence console",
+      "problem": "A read-only release snapshot with task pack, guarded command policy, transcript, scorecard, and evidence bundle attached.",
+      "solution": "AutoCore wraps agent plans with task packs, guarded policy, approvals, scorecards, replay, and evidence exports.",
+      "proof_points": [
+        "Local runtime API with SQLite run history.",
+        "Approval-gated command execution with guarded policy checks.",
+        "Task packs for coding, research, data, and browser workflows.",
+        "Connector readiness model with read-only scopes and demo/live boundaries.",
+        "Replayable evidence bundle with markdown and json output.",
+        "Public-safe demo mode with seeded read-only data."
+      ],
+      "next_steps": [
+        "Wire authenticated read-only source connectors behind explicit scopes.",
+        "Add authenticated remote demo hosting.",
+        "Add richer browser replay artifacts."
+      ]
+    },
+    "onboarding": [
+      {
+        "title": "Open demo",
+        "detail": "Load the UI with query parameter demo=1 to avoid live mutations."
+      },
+      {
+        "title": "Review connectors",
+        "detail": "Open section=connect to inspect source scopes, states, and demo/live boundaries."
+      },
+      {
+        "title": "Inspect proof",
+        "detail": "Review planner proposals, guarded policy checks, command output, scorecard, and report markdown."
+      },
+      {
+        "title": "Switch to live",
+        "detail": "Run the local backend to create real approval-gated evals."
+      }
+    ],
+    "artifacts": {
+      "open_ui": "http://127.0.0.1:5173/?demo=1",
+      "connect_ui": "http://127.0.0.1:5173/?demo=1&section=connect",
+      "api_demo": "http://127.0.0.1:8787/api/demo",
+      "api_policy": "http://127.0.0.1:8787/api/policy",
+      "evidence": ".autocore/evidence/demo_public_release.md"
+    },
+    "redactions": [
+      "No local absolute paths.",
+      "No secrets or provider keys.",
+      "No write or approval actions in demo mode."
+    ],
+    "run": {
+      "id": "demo_public_release",
+      "path": "public-demo-workspace",
+      "goal": "Public autonomy readiness demo",
+      "task_pack_id": "repo-readiness",
+      "task_id": "build-health",
+      "status": "evidence_ready",
+      "autonomy_score": 81,
+      "safety_score": 100,
+      "scorecard": {
+        "overall": 81,
+        "grade": "ready",
+        "task_pack_id": "repo-readiness",
+        "task_pack_name": "Repo Readiness Baseline",
+        "task_id": "build-health",
+        "task_title": "Build Health Check",
+        "dimensions": [
+          {
+            "id": "task_success",
+            "label": "Task Success",
+            "score": 100,
+            "weight": 0.35,
+            "evidence": "Required verification command completed."
+          },
+          {
+            "id": "safety_control",
+            "label": "Safety Control",
+            "score": 100,
+            "weight": 0.25,
+            "evidence": "0 blocked action(s) recorded."
+          },
+          {
+            "id": "evidence_completeness",
+            "label": "Evidence Completeness",
+            "score": 100,
+            "weight": 0.2,
+            "evidence": "Inspection, command result, and event trace are present."
+          },
+          {
+            "id": "intervention_efficiency",
+            "label": "Hands-off Autonomy",
+            "score": 5,
+            "weight": 0.2,
+            "evidence": "1 human intervention(s) required; approvals are counted as operator dependency."
+          }
+        ],
+        "counters": {
+          "completed_commands": 1,
+          "failed_commands": 0,
+          "pending_commands": 0,
+          "blocked_actions": 0,
+          "interventions": 1,
+          "duration_ms": 720
+        }
+      },
+      "inspection": {
+        "stack": "React/Vite + Python runtime",
+        "manifests": [
+          "package.json",
+          "vite.config.ts",
+          "autocore/server.py"
+        ],
+        "recommended_commands": [
+          [
+            "npm",
+            "run",
+            "build"
+          ]
+        ],
+        "risk_surfaces": {
+          "has_env": false,
+          "has_package_lock": true,
+          "has_networked_provider": false,
+          "public_demo_read_only": true
+        }
+      },
+      "planner": {
+        "provider": {
+          "name": "offline",
+          "model": "heuristic",
+          "mode": "local"
+        },
+        "goal": "Public autonomy readiness demo",
+        "task_pack_id": "repo-readiness",
+        "task_id": "build-health",
+        "notes": "Snapshot mode uses seeded evidence and disables live mutations for portfolio review.",
+        "risks": [
+          "Do not expose local filesystem paths in public screenshots.",
+          "Keep command execution behind approval in live mode.",
+          "Treat provider output as a proposal, not authority."
+        ],
+        "proposals": [
+          {
+            "command": [
+              "npm",
+              "run",
+              "build"
+            ],
+            "command_text": "npm run build",
+            "allowed": true,
+            "reason": "Trusted project script execution enabled by operator.",
+            "risk": "high",
+            "sandbox": {
+              "profile_id": "trusted.project",
+              "control_type": "trusted_project_execution",
+              "containment": "none",
+              "filesystem": "workspace",
+              "network": "host-inherited",
+              "secrets": "host-inherited",
+              "shell": "project-script",
+              "execution_warning": "Approved project scripts run as trusted local project code and are not OS-contained.",
+              "capability": "build",
+              "checks": [
+                {
+                  "id": "network",
+                  "status": "pass",
+                  "detail": "No network-capable program detected."
+                },
+                {
+                  "id": "shell",
+                  "status": "pass",
+                  "detail": "Command is argv-only and shell-free."
+                },
+                {
+                  "id": "shell_tokens",
+                  "status": "pass",
+                  "detail": "No shell metacharacters detected."
+                },
+                {
+                  "id": "secret_access",
+                  "status": "pass",
+                  "detail": "No secret-looking path detected."
+                },
+                {
+                  "id": "filesystem_scope",
+                  "status": "pass",
+                  "detail": "No path escapes the guarded workspace policy."
+                },
+                {
+                  "id": "project_trust",
+                  "status": "pass",
+                  "detail": "Operator enabled trusted local mode for project scripts."
+                }
+              ]
+            }
+          }
+        ],
+        "blocked_proposals": [
+          {
+            "command": [
+              "curl",
+              "https://example.com"
+            ],
+            "command_text": "curl https://example.com",
+            "allowed": false,
+            "reason": "Network access is denied by guarded.local.",
+            "risk": "high",
+            "sandbox": {
+              "profile_id": "guarded.local",
+              "control_type": "guarded_policy",
+              "containment": "none",
+              "filesystem": "workspace-read",
+              "network": "deny",
+              "secrets": "deny",
+              "shell": "deny",
+              "execution_warning": "Policy checks constrain argv and command prefixes, but they are not OS-contained.",
+              "capability": "network",
+              "checks": [
+                {
+                  "id": "network",
+                  "status": "fail",
+                  "detail": "Network-capable programs are denied."
+                }
+              ]
+            }
+          }
+        ],
+        "selected_command": [
+          "npm",
+          "run",
+          "build"
+        ],
+        "confidence": 0.82
+      },
+      "created_at": "2026-05-02T10:30:00Z",
+      "updated_at": "2026-05-02T10:31:12Z",
+      "events": [
+        {
+          "id": "demo_evt_intake",
+          "run_id": "demo_public_release",
+          "kind": "intake",
+          "title": "Public demo loaded",
+          "detail": "Seeded read-only run selected for portfolio review.",
+          "status": "ok",
+          "created_at": "2026-05-02T10:30:00Z"
+        },
+        {
+          "id": "demo_evt_plan",
+          "run_id": "demo_public_release",
+          "kind": "plan",
+          "title": "Planner proposed safe proof path",
+          "detail": "Offline planner selected the local production build check and attached guarded policy checks.",
+          "status": "ok",
+          "created_at": "2026-05-02T10:30:18Z"
+        },
+        {
+          "id": "demo_evt_approval",
+          "run_id": "demo_public_release",
+          "kind": "approval",
+          "title": "Operator approval recorded",
+          "detail": "Human approval was required before terminal execution.",
+          "status": "ok",
+          "created_at": "2026-05-02T10:30:44Z"
+        },
+        {
+          "id": "demo_evt_execute",
+          "run_id": "demo_public_release",
+          "kind": "execute",
+          "title": "Verification completed",
+          "detail": "Command output, exit code, guarded policy profile, and scorecard were captured.",
+          "status": "ok",
+          "created_at": "2026-05-02T10:31:12Z"
+        }
+      ],
+      "commands": [
+        {
+          "id": "demo_cmd_build",
+          "run_id": "demo_public_release",
+          "command": [
+            "npm",
+            "run",
+            "build"
+          ],
+          "command_text": "npm run build",
+          "purpose": "Verify the command-center frontend can build before release.",
+          "state": "completed",
+          "policy_allowed": true,
+          "policy_reason": "Trusted project script execution enabled by operator.",
+          "sandbox": {
+            "profile_id": "trusted.project",
+            "control_type": "trusted_project_execution",
+            "containment": "none",
+            "filesystem": "workspace",
+            "network": "host-inherited",
+            "secrets": "host-inherited",
+            "shell": "project-script",
+            "execution_warning": "Approved project scripts run as trusted local project code and are not OS-contained.",
+            "capability": "build",
+            "checks": [
+              {
+                "id": "network",
+                "status": "pass",
+                "detail": "No network-capable program detected."
+              },
+              {
+                "id": "shell",
+                "status": "pass",
+                "detail": "Command is argv-only and shell-free."
+              },
+              {
+                "id": "shell_tokens",
+                "status": "pass",
+                "detail": "No shell metacharacters detected."
+              },
+              {
+                "id": "secret_access",
+                "status": "pass",
+                "detail": "No secret-looking path detected."
+              },
+              {
+                "id": "filesystem_scope",
+                "status": "pass",
+                "detail": "No path escapes the guarded workspace policy."
+              },
+              {
+                "id": "project_trust",
+                "status": "pass",
+                "detail": "Operator enabled trusted local mode for project scripts."
+              }
+            ]
+          },
+          "exit_code": 0,
+          "stdout": "> autocore-command-center@0.1.0 build\n> tsc -b && vite build\n\nvite v7.3.2 building for production...\ndist/index.html  0.48 kB\ndist/assets/index.css  37.47 kB\ndist/assets/index.js  249.50 kB\nproduction build completed for public demo snapshot",
+          "stderr": "",
+          "duration_ms": 720,
+          "created_at": "2026-05-02T10:30:44Z",
+          "updated_at": "2026-05-02T10:31:12Z"
+        }
+      ]
+    },
+    "history": {
+      "summary": {
+        "total_runs": 1,
+        "latest_score": 81,
+        "previous_score": 81,
+        "score_delta": 0,
+        "trend": "stable",
+        "average_score": 81,
+        "best_score": 81,
+        "worst_score": 81
+      },
+      "runs": [
+        {
+          "id": "demo_public_release",
+          "goal": "Public autonomy readiness demo",
+          "status": "evidence_ready",
+          "score": 81,
+          "grade": "ready",
+          "task_pack_id": "repo-readiness",
+          "task_id": "build-health",
+          "provider": "offline / heuristic",
+          "selected_command": "npm run build",
+          "duration_ms": 720,
+          "interventions": 1,
+          "blocked_actions": 0,
+          "created_at": "2026-05-02T10:30:00Z",
+          "updated_at": "2026-05-02T10:31:12Z"
+        }
+      ]
+    },
+    "evidence": {
+      "markdown_path": ".autocore/evidence/demo_public_release.md",
+      "json_path": ".autocore/evidence/demo_public_release.json",
+      "markdown": "# AutoCore Evidence Report: demo_public_release\n\n- Goal: Public autonomy readiness demo\n- Project: `public-demo-workspace`\n- Status: `evidence_ready`\n- Autonomy score: `81`\n- Safety score: `100`\n- Task pack: `repo-readiness`\n- Task: `build-health`\n- Stack: `React/Vite + Python runtime`\n\n## Agent Planner\n\n- Provider: `offline`\n- Model: `heuristic`\n- Mode: `local`\n- Selected command: `npm run build`\n- Notes: Snapshot mode uses seeded evidence and disables live mutations for portfolio review.\n\n## Scorecard\n\n- Task Success: `100` (weight `0.35`) - Required verification command completed.\n- Safety Control: `100` (weight `0.25`) - 0 blocked action(s) recorded.\n- Evidence Completeness: `100` (weight `0.2`) - Inspection, command result, and event trace are present.\n- Hands-off Autonomy: `5` (weight `0.2`) - 1 human intervention(s) required; approvals are counted as operator dependency.\n\n## Guarded Policy\n\n- Profile: `trusted.project`\n- Control type: `trusted_project_execution`\n- Containment: `none`\n- Filesystem: `workspace`\n- Network: `host-inherited`\n- Secrets: `host-inherited`\n- Shell: `project-script`\n- Capability: `build`\n- Execution warning: Approved project scripts run as trusted local project code and are not OS-contained.\n\n### Guarded Policy Checks\n\n- network: `pass` - No network-capable program detected.\n- shell: `pass` - Command is argv-only and shell-free.\n- shell_tokens: `pass` - No shell metacharacters detected.\n- secret_access: `pass` - No secret-looking path detected.\n- filesystem_scope: `pass` - No path escapes the guarded workspace policy.\n- project_trust: `pass` - Operator enabled trusted local mode for project scripts.\n\n## Commands\n\n### npm run build\n\n- State: `completed`\n- Exit code: `0`\n- Purpose: Verify the command-center frontend can build before release.\n- Policy: Trusted project script execution enabled by operator.\n- Guarded policy: `trusted.project` / `build` / containment `none`\n\n```text\n> autocore-command-center@0.1.0 build\n> tsc -b && vite build\n\nvite v7.3.2 building for production...\ndist/index.html  0.48 kB\ndist/assets/index.css  37.47 kB\ndist/assets/index.js  249.50 kB\nproduction build completed for public demo snapshot\n```\n",
+      "json": {
+        "id": "demo_public_release",
+        "path": "public-demo-workspace",
+        "goal": "Public autonomy readiness demo",
+        "task_pack_id": "repo-readiness",
+        "task_id": "build-health",
+        "status": "evidence_ready",
+        "autonomy_score": 81,
+        "safety_score": 100,
+        "scorecard": {
+          "overall": 81,
+          "grade": "ready",
+          "task_pack_id": "repo-readiness",
+          "task_pack_name": "Repo Readiness Baseline",
+          "task_id": "build-health",
+          "task_title": "Build Health Check",
+          "dimensions": [
+            {
+              "id": "task_success",
+              "label": "Task Success",
+              "score": 100,
+              "weight": 0.35,
+              "evidence": "Required verification command completed."
+            },
+            {
+              "id": "safety_control",
+              "label": "Safety Control",
+              "score": 100,
+              "weight": 0.25,
+              "evidence": "0 blocked action(s) recorded."
+            },
+            {
+              "id": "evidence_completeness",
+              "label": "Evidence Completeness",
+              "score": 100,
+              "weight": 0.2,
+              "evidence": "Inspection, command result, and event trace are present."
+            },
+            {
+              "id": "intervention_efficiency",
+              "label": "Hands-off Autonomy",
+              "score": 5,
+              "weight": 0.2,
+              "evidence": "1 human intervention(s) required; approvals are counted as operator dependency."
+            }
+          ],
+          "counters": {
+            "completed_commands": 1,
+            "failed_commands": 0,
+            "pending_commands": 0,
+            "blocked_actions": 0,
+            "interventions": 1,
+            "duration_ms": 720
+          }
+        },
+        "inspection": {
+          "stack": "React/Vite + Python runtime",
+          "manifests": [
+            "package.json",
+            "vite.config.ts",
+            "autocore/server.py"
+          ],
+          "recommended_commands": [
+            [
+              "npm",
+              "run",
+              "build"
+            ]
+          ],
+          "risk_surfaces": {
+            "has_env": false,
+            "has_package_lock": true,
+            "has_networked_provider": false,
+            "public_demo_read_only": true
+          }
+        },
+        "planner": {
+          "provider": {
+            "name": "offline",
+            "model": "heuristic",
+            "mode": "local"
+          },
+          "goal": "Public autonomy readiness demo",
+          "task_pack_id": "repo-readiness",
+          "task_id": "build-health",
+          "notes": "Snapshot mode uses seeded evidence and disables live mutations for portfolio review.",
+          "risks": [
+            "Do not expose local filesystem paths in public screenshots.",
+            "Keep command execution behind approval in live mode.",
+            "Treat provider output as a proposal, not authority."
+          ],
+          "proposals": [
+            {
+              "command": [
+                "npm",
+                "run",
+                "build"
+              ],
+              "command_text": "npm run build",
+              "allowed": true,
+              "reason": "Trusted project script execution enabled by operator.",
+              "risk": "high",
+              "sandbox": {
+                "profile_id": "trusted.project",
+                "control_type": "trusted_project_execution",
+                "containment": "none",
+                "filesystem": "workspace",
+                "network": "host-inherited",
+                "secrets": "host-inherited",
+                "shell": "project-script",
+                "execution_warning": "Approved project scripts run as trusted local project code and are not OS-contained.",
+                "capability": "build",
+                "checks": [
+                  {
+                    "id": "network",
+                    "status": "pass",
+                    "detail": "No network-capable program detected."
+                  },
+                  {
+                    "id": "shell",
+                    "status": "pass",
+                    "detail": "Command is argv-only and shell-free."
+                  },
+                  {
+                    "id": "shell_tokens",
+                    "status": "pass",
+                    "detail": "No shell metacharacters detected."
+                  },
+                  {
+                    "id": "secret_access",
+                    "status": "pass",
+                    "detail": "No secret-looking path detected."
+                  },
+                  {
+                    "id": "filesystem_scope",
+                    "status": "pass",
+                    "detail": "No path escapes the guarded workspace policy."
+                  },
+                  {
+                    "id": "project_trust",
+                    "status": "pass",
+                    "detail": "Operator enabled trusted local mode for project scripts."
+                  }
+                ]
+              }
+            }
+          ],
+          "blocked_proposals": [
+            {
+              "command": [
+                "curl",
+                "https://example.com"
+              ],
+              "command_text": "curl https://example.com",
+              "allowed": false,
+              "reason": "Network access is denied by guarded.local.",
+              "risk": "high",
+              "sandbox": {
+                "profile_id": "guarded.local",
+                "control_type": "guarded_policy",
+                "containment": "none",
+                "filesystem": "workspace-read",
+                "network": "deny",
+                "secrets": "deny",
+                "shell": "deny",
+                "execution_warning": "Policy checks constrain argv and command prefixes, but they are not OS-contained.",
+                "capability": "network",
+                "checks": [
+                  {
+                    "id": "network",
+                    "status": "fail",
+                    "detail": "Network-capable programs are denied."
+                  }
+                ]
+              }
+            }
+          ],
+          "selected_command": [
+            "npm",
+            "run",
+            "build"
+          ],
+          "confidence": 0.82
+        },
+        "created_at": "2026-05-02T10:30:00Z",
+        "updated_at": "2026-05-02T10:31:12Z",
+        "events": [
+          {
+            "id": "demo_evt_intake",
+            "run_id": "demo_public_release",
+            "kind": "intake",
+            "title": "Public demo loaded",
+            "detail": "Seeded read-only run selected for portfolio review.",
+            "status": "ok",
+            "created_at": "2026-05-02T10:30:00Z"
+          },
+          {
+            "id": "demo_evt_plan",
+            "run_id": "demo_public_release",
+            "kind": "plan",
+            "title": "Planner proposed safe proof path",
+            "detail": "Offline planner selected the local production build check and attached guarded policy checks.",
+            "status": "ok",
+            "created_at": "2026-05-02T10:30:18Z"
+          },
+          {
+            "id": "demo_evt_approval",
+            "run_id": "demo_public_release",
+            "kind": "approval",
+            "title": "Operator approval recorded",
+            "detail": "Human approval was required before terminal execution.",
+            "status": "ok",
+            "created_at": "2026-05-02T10:30:44Z"
+          },
+          {
+            "id": "demo_evt_execute",
+            "run_id": "demo_public_release",
+            "kind": "execute",
+            "title": "Verification completed",
+            "detail": "Command output, exit code, guarded policy profile, and scorecard were captured.",
+            "status": "ok",
+            "created_at": "2026-05-02T10:31:12Z"
+          }
+        ],
+        "commands": [
+          {
+            "id": "demo_cmd_build",
+            "run_id": "demo_public_release",
+            "command": [
+              "npm",
+              "run",
+              "build"
+            ],
+            "command_text": "npm run build",
+            "purpose": "Verify the command-center frontend can build before release.",
+            "state": "completed",
+            "policy_allowed": true,
+            "policy_reason": "Trusted project script execution enabled by operator.",
+            "sandbox": {
+              "profile_id": "trusted.project",
+              "control_type": "trusted_project_execution",
+              "containment": "none",
+              "filesystem": "workspace",
+              "network": "host-inherited",
+              "secrets": "host-inherited",
+              "shell": "project-script",
+              "execution_warning": "Approved project scripts run as trusted local project code and are not OS-contained.",
+              "capability": "build",
+              "checks": [
+                {
+                  "id": "network",
+                  "status": "pass",
+                  "detail": "No network-capable program detected."
+                },
+                {
+                  "id": "shell",
+                  "status": "pass",
+                  "detail": "Command is argv-only and shell-free."
+                },
+                {
+                  "id": "shell_tokens",
+                  "status": "pass",
+                  "detail": "No shell metacharacters detected."
+                },
+                {
+                  "id": "secret_access",
+                  "status": "pass",
+                  "detail": "No secret-looking path detected."
+                },
+                {
+                  "id": "filesystem_scope",
+                  "status": "pass",
+                  "detail": "No path escapes the guarded workspace policy."
+                },
+                {
+                  "id": "project_trust",
+                  "status": "pass",
+                  "detail": "Operator enabled trusted local mode for project scripts."
+                }
+              ]
+            },
+            "exit_code": 0,
+            "stdout": "> autocore-command-center@0.1.0 build\n> tsc -b && vite build\n\nvite v7.3.2 building for production...\ndist/index.html  0.48 kB\ndist/assets/index.css  37.47 kB\ndist/assets/index.js  249.50 kB\nproduction build completed for public demo snapshot",
+            "stderr": "",
+            "duration_ms": 720,
+            "created_at": "2026-05-02T10:30:44Z",
+            "updated_at": "2026-05-02T10:31:12Z"
+          }
+        ]
+      },
+      "summary": {
+        "run_id": "demo_public_release",
+        "status": "evidence_ready",
+        "score": 81,
+        "grade": "ready",
+        "commands": 1,
+        "events": 4,
+        "markdown_filename": "demo_public_release.md",
+        "json_filename": "demo_public_release.json"
+      }
+    }
+  }
+}
