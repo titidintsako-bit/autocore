@@ -4,6 +4,24 @@ AutoCore is an open-source, self-hosted, BYOK evidence console for AI-assisted s
 
 AutoCore is local-first and offline by default. Provider keys stay on your machine. Model output is treated as a proposal, not authority.
 
+Public alpha:
+
+- Demo: https://autocore-tau.vercel.app
+- Source: https://github.com/titidintsako-bit/autocore
+- Release state: `v0.1.0-alpha`
+
+## Plain-English Workflow
+
+AutoCore answers one practical question: is this AI-assisted project ready to trust, share, or keep fixing?
+
+1. Pick the project folder.
+2. Click `Check this project`.
+3. Review the verdict.
+4. Approve the guarded local check only if you trust the repo.
+5. Open Evidence and use the report to decide what to fix next.
+
+If you are not a software engineer, start with Setup and Companion. Treat Lab, Policy, and raw Evidence as advanced views.
+
 ## What It Is
 
 - A local evidence console for AI-built or AI-assisted projects.
@@ -247,13 +265,26 @@ Public mode returns sanitized read-only responses and blocks mutations.
 
 ## Release Status
 
-AutoCore is ready to publish as `v0.1.0-alpha` after the final release checklist passes:
+AutoCore is public as `v0.1.0-alpha`.
 
-- `npm run verify`
-- public mode browser smoke
+Public links:
+
+- GitHub: https://github.com/titidintsako-bit/autocore
+- Demo: https://autocore-tau.vercel.app
+
+Release checklist:
+
+- `npm run verify:release`
+- public mode stays read-only
 - no secrets in docs or build output
 - no local paths in public demo responses
 - Build Auditor reports no product mocked-data findings
-- contained execution claim remains blocked unless Docker evidence exists
+- contained execution claims remain blocked unless Docker evidence exists
 
 Commercial hosting should wait until real users validate the self-hosted workflow.
+
+## Project Governance
+
+- Security policy: [SECURITY.md](SECURITY.md)
+- Contributing guide: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Roadmap: [ROADMAP.md](ROADMAP.md)

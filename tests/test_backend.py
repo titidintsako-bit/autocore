@@ -1067,15 +1067,32 @@ class DeploymentSafetyTests(unittest.TestCase):
         readme = (ROOT / "README.md").read_text(encoding="utf-8").lower()
         deployment = (ROOT / "DEPLOYMENT.md").read_text(encoding="utf-8").lower()
         case_study = (ROOT / "PORTFOLIO_CASE_STUDY.md").read_text(encoding="utf-8").lower()
-        public_docs = "\n".join([readme, deployment, case_study])
+        security = (ROOT / "SECURITY.md").read_text(encoding="utf-8").lower()
+        contributing = (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8").lower()
+        roadmap = (ROOT / "ROADMAP.md").read_text(encoding="utf-8").lower()
+        public_docs = "\n".join([readme, deployment, case_study, security, contributing, roadmap])
 
         self.assertIn("self-hosted", public_docs)
         self.assertIn("byok", public_docs)
         self.assertIn("open-source", public_docs)
         self.assertIn("guarded policy", public_docs)
         self.assertIn("contained execution", public_docs)
+        self.assertIn("v0.1.0-alpha", public_docs)
         self.assertNotIn("sandbox", public_docs)
         self.assertNotIn("deep security", public_docs)
+
+    def test_public_launch_docs_exist_and_keep_beginner_friendly_scope(self):
+        for filename in ("SECURITY.md", "CONTRIBUTING.md", "ROADMAP.md"):
+            self.assertTrue((ROOT / filename).exists(), filename)
+
+        readme = (ROOT / "README.md").read_text(encoding="utf-8").lower()
+        roadmap = (ROOT / "ROADMAP.md").read_text(encoding="utf-8").lower()
+        security = (ROOT / "SECURITY.md").read_text(encoding="utf-8").lower()
+
+        self.assertIn("plain-english workflow", readme)
+        self.assertIn("beginner-readable workflow", roadmap)
+        self.assertIn("do not publish yet", roadmap)
+        self.assertIn("does not currently claim full security coverage", security)
 
     def test_easy_start_scripts_exist_for_public_and_private_modes(self):
         package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
