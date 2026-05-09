@@ -1094,6 +1094,23 @@ class DeploymentSafetyTests(unittest.TestCase):
         self.assertIn("do not publish yet", roadmap)
         self.assertIn("does not currently claim full security coverage", security)
 
+    def test_frontend_exposes_beginner_mode_for_agent_users(self):
+        app_source = (ROOT / "src" / "App.tsx").read_text(encoding="utf-8")
+
+        for phrase in (
+            "Start Here",
+            "Beginner Mode",
+            "Safe to share",
+            "Needs work",
+            "Do not publish yet",
+            "Fix with Codex",
+            "Repair prompt ready",
+            "Agent Loop",
+            "What this means",
+            "Why AutoCore thinks this",
+        ):
+            self.assertIn(phrase, app_source)
+
     def test_easy_start_scripts_exist_for_public_and_private_modes(self):
         package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
         scripts = package["scripts"]

@@ -20,7 +20,7 @@ AutoCore answers one practical question: is this AI-assisted project ready to tr
 4. Approve the guarded local check only if you trust the repo.
 5. Open Evidence and use the report to decide what to fix next.
 
-If you are not a software engineer, start with Setup and Companion. Treat Lab, Policy, and raw Evidence as advanced views.
+If you are not a software engineer, start with `Start Here` and Companion. Treat Lab, Policy, and raw Evidence as advanced views.
 
 ## What It Is
 
@@ -66,7 +66,7 @@ That one command starts the local API, starts the web app, opens the Setup tab, 
 
 If the default ports are already in use, the launcher picks free ports and prints the exact URL. If an older AutoCore backend is still running, the UI also shows a restart warning instead of failing silently.
 
-In Setup, click `Choose folder` to pick the repo you want AutoCore to audit. If the native picker is unavailable, use `Paste path` on Connect. Then click `Check this project` to create a Prompt Lab score, Build Auditor scan, and approval-gated run from one local workflow.
+In `Start Here`, click `Choose folder` to pick the repo you want AutoCore to audit. If the native picker is unavailable, use `Paste path` on Connect. Then click `Check this project` to create a Prompt Lab score, Build Auditor scan, and approval-gated run from one local workflow. The Beginner Mode panel translates the result into `Safe to share`, `Needs work`, or `Do not publish yet`, explains why, and gives you a `Fix with Codex` prompt when more work is needed.
 
 When you are using Codex, open the Companion tab after each meaningful code change. It shows changed files, high-risk markers, missing test evidence, a copyable next Codex prompt, `Check this project`, and a focused audit for the latest Codex changes.
 

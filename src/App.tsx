@@ -98,10 +98,12 @@ const viewerTabs = ["replay", "planner", "output", "scorecard", "report"] as con
 type ViewerTab = (typeof viewerTabs)[number];
 const surfaceTabs = ["setup", "companion", "lab", "audit", "overview", "connect", "runs", "evidence", "policy"] as const;
 type SurfaceTab = (typeof surfaceTabs)[number];
+const primarySurfaceTabs: SurfaceTab[] = ["setup", "companion", "audit", "runs", "overview"];
+const advancedSurfaceTabs: SurfaceTab[] = ["lab", "connect", "evidence", "policy"];
 const ansiEscapePattern = /\u001b\[[0-?]*[ -/]*[@-~]/g;
 
 const surfaceTabLabel: Record<SurfaceTab, string> = {
-  setup: "Setup",
+  setup: "Start Here",
   companion: "Companion",
   lab: "Lab",
   audit: "Audit",
@@ -249,6 +251,147 @@ function scoreDimensionEvidence(dimension: { id: string; evidence: string }) {
 function taskPackTask(pack: TaskPack | undefined) {
   if (!pack) return undefined;
   return pack.tasks.find((task) => task.id === pack.default_task_id) ?? pack.tasks[0];
+}
+
+type BeginnerVerdict = {
+  label: "Safe to share" | "Needs work" | "Do not publish yet";
+  tone: "ready" | "watch" | "blocked";
+  summary: string;
+  meaning: string;
+  evidence: string[];
+  nextAction: string;
+};
+
+function beginnerVerdict({
+  audit,
+  run,
+  companion,
+  setup,
+  hasEvidence,
+}: {
+  audit: BuildAudit | null;
+  run: RuntimeRun | null;
+  companion: CompanionStatus | null;
+  setup: SetupStatus | null;
+  hasEvidence: boolean;
+}): BeginnerVerdict {
+  if (setup?.read_only) {
+    return {
+      label: "Needs work",
+      tone: "watch",
+      summary: "This is the public preview, not your personal project.",
+      meaning: "Clone AutoCore and run it locally before using the verdict on your own repo.",
+      evidence: ["Public mode is read-only", "Local paths and live actions are hidden", "Demo evidence cannot prove your project"],
+      nextAction: "Run AutoCore locally, choose your project folder, then click Check this project.",
+    };
+  }
+
+  if (audit && (!audit.no_mocked_data || audit.verdict === "not_ready" || audit.checks.some((check) => check.status === "fail"))) {
+    const failed = audit.checks.filter((check) => check.status === "fail").slice(0, 3);
+    return {
+      label: "Do not publish yet",
+      tone: "blocked",
+      summary: "AutoCore found product risk that should be fixed before sharing.",
+      meaning: "Treat the repo as unfinished until the failed checks are fixed and the release gate passes again.",
+      evidence: [
+        audit.no_mocked_data ? "No product mocked-data pattern found" : "Mocked-data pattern found",
+        ...failed.map((check) => `${check.label}: ${check.evidence}`),
+        `Build Auditor score: ${audit.overall}`,
+      ],
+      nextAction: "Copy the Fix with Codex prompt, apply the repair, then rerun Check this project.",
+    };
+  }
+
+  if (run?.status === "evidence_ready" && audit?.verdict === "ready" && audit.no_mocked_data && hasEvidence) {
+    return {
+      label: "Safe to share",
+      tone: "ready",
+      summary: "AutoCore has evidence for the current readiness claim.",
+      meaning: "You can share the project as evidence-checked, while keeping security claims limited.",
+      evidence: [
+        "Evidence report generated",
+        "Build Auditor verdict is ready",
+        "No product mocked-data finding",
+        `Quality claim: ${audit.claims.quality.status.replace("_", " ")}`,
+        `Security claim: ${audit.claims.security.status.replace("_", " ")}`,
+      ],
+      nextAction: "Open Evidence, read the report, then publish only the claims AutoCore supports.",
+    };
+  }
+
+  if (run?.status === "approval_required") {
+    return {
+      label: "Needs work",
+      tone: "watch",
+      summary: "A guarded check is waiting for your approval.",
+      meaning: "AutoCore has planned a local check, but it has not captured command evidence yet.",
+      evidence: [
+        `Pending command: ${run.commands[0]?.command_text ?? "selected check"}`,
+        "Policy checked before execution",
+        "Evidence report not generated yet",
+      ],
+      nextAction: "Open Runs, approve the guarded check only if you trust this project, then review Evidence.",
+    };
+  }
+
+  if ((companion?.summary.high_risk_files ?? 0) > 0) {
+    return {
+      label: "Needs work",
+      tone: "watch",
+      summary: "Recent agent changes include files AutoCore considers higher risk.",
+      meaning: "Review the changed files before trusting the finished result.",
+      evidence: [
+        `${companion?.summary.high_risk_files ?? 0} high-risk changed files`,
+        `${companion?.summary.changed_files ?? 0} changed files total`,
+        "Companion audit recommended before publishing",
+      ],
+      nextAction: "Open Companion, inspect high-risk files, then run Check this project.",
+    };
+  }
+
+  return {
+    label: "Needs work",
+    tone: "watch",
+    summary: "AutoCore needs one guided audit before it can make a useful verdict.",
+    meaning: "A repo can look finished in the browser but still lack proof that checks passed.",
+    evidence: [
+      setup?.project.exists ? `Project selected: ${setup.project.name}` : "No confirmed project folder yet",
+      setup?.project.stack ? `Detected stack: ${setup.project.stack}` : "Project stack not detected yet",
+      "No completed evidence report yet",
+    ],
+    nextAction: "Choose the right project folder, then click Check this project.",
+  };
+}
+
+function codexFixPrompt(verdict: BeginnerVerdict, audit: BuildAudit | null, companion: CompanionStatus | null) {
+  const failedChecks = audit?.checks
+    .filter((check) => check.status === "fail" || check.status === "warn")
+    .slice(0, 5)
+    .map((check) => `- ${check.label}: ${check.evidence}`)
+    .join("\n");
+  const changedFiles = companion?.changed_files
+    .filter((file) => file.risk === "high" || file.risk === "medium")
+    .slice(0, 8)
+    .map((file) => `- ${file.path}: ${file.signals.join(", ") || file.risk}`)
+    .join("\n");
+
+  return [
+    "You are working on my current repo. Use AutoCore's findings to make the project safer to share.",
+    "",
+    `AutoCore verdict: ${verdict.label}`,
+    `Meaning: ${verdict.meaning}`,
+    "",
+    "Fix goals:",
+    "- Remove or isolate product mocked-data patterns.",
+    "- Add or run focused tests for the changed behavior.",
+    "- Keep security claims limited to evidence that exists.",
+    "- Do not add fake/demo data to production surfaces.",
+    "- After changes, run npm run verify:release.",
+    "",
+    failedChecks ? `Audit findings:\n${failedChecks}` : "Audit findings: no saved failed Build Auditor checks yet.",
+    "",
+    changedFiles ? `Changed files to inspect:\n${changedFiles}` : "Changed files to inspect: no medium/high-risk companion files listed.",
+  ].join("\n");
 }
 
 function sandboxValue(
@@ -410,6 +553,7 @@ function App() {
   const [activeSurface, setActiveSurface] = useState<SurfaceTab>(initialSurfaceTab);
   const [collapsedRows, setCollapsedRows] = useState<Record<string, boolean>>(initialCollapsedRows);
   const [panelNotice, setPanelNotice] = useState<string | null>(null);
+  const [agentPromptDraft, setAgentPromptDraft] = useState<string | null>(null);
   const [connectorInventory, setConnectorInventory] = useState<ConnectorInventory | null>(null);
   const [connectorError, setConnectorError] = useState<string | null>(null);
   const [selectedConnectorId, setSelectedConnectorId] = useState("local-repo");
@@ -833,8 +977,17 @@ function App() {
       complete: Boolean(activeEvidenceReport || evidenceBundle),
     },
   ];
+  const beginner = beginnerVerdict({
+    audit: selectedBuildAudit,
+    run: runtimeRun,
+    companion: companionStatus,
+    setup: setupStatus,
+    hasEvidence: Boolean(activeEvidenceReport || evidenceBundle),
+  });
+  const beginnerEvidence = beginner.evidence.slice(0, 5);
+  const beginnerFixPrompt = codexFixPrompt(beginner, selectedBuildAudit, companionStatus);
   const activeRowTitle: Record<SurfaceTab, string> = {
-    setup: "First-run guide",
+    setup: "Beginner Mode",
     companion: "Codex change review",
     lab: "Prompt preflight",
     audit: "Build trust audit",
@@ -893,6 +1046,16 @@ function App() {
       setPanelNotice(`${label} copied`);
     } catch {
       setPanelNotice("Copy is unavailable in this browser context");
+    }
+  }
+
+  async function showCodexFixPrompt() {
+    setAgentPromptDraft(beginnerFixPrompt);
+    try {
+      await navigator.clipboard.writeText(beginnerFixPrompt);
+      setPanelNotice("Fix with Codex prompt copied and shown below");
+    } catch {
+      setPanelNotice("Fix with Codex prompt ready below");
     }
   }
 
@@ -1407,7 +1570,7 @@ function App() {
             <span className="screen-label">Corporate Cockpit / Evidence Operations</span>
             <h1>AutoCore OCC Dashboard</h1>
             <nav className="cockpit-nav" aria-label="Dashboard sections" role="tablist">
-              {surfaceTabs.map((tab) => (
+              {primarySurfaceTabs.map((tab) => (
                 <button
                   aria-controls={`surface-panel-${tab}`}
                   aria-current={activeSurface === tab ? "page" : undefined}
@@ -1422,6 +1585,26 @@ function App() {
                   {surfaceTabLabel[tab]}
                 </button>
               ))}
+              <details className="advanced-nav" open={advancedSurfaceTabs.includes(activeSurface)}>
+                <summary>Advanced</summary>
+                <div>
+                  {advancedSurfaceTabs.map((tab) => (
+                    <button
+                      aria-controls={`surface-panel-${tab}`}
+                      aria-current={activeSurface === tab ? "page" : undefined}
+                      aria-selected={activeSurface === tab}
+                      className={activeSurface === tab ? "selected" : ""}
+                      id={`surface-tab-${tab}`}
+                      key={tab}
+                      onClick={() => setActiveSurface(tab)}
+                      role="tab"
+                      type="button"
+                    >
+                      {surfaceTabLabel[tab]}
+                    </button>
+                  ))}
+                </div>
+              </details>
             </nav>
           </div>
           <div className="topbar-actions">
@@ -1625,7 +1808,77 @@ function App() {
             </section>
           </section>
 
-          <section className="setup-console" aria-label="First-run setup">
+          <section className="setup-console" aria-label="Beginner Mode">
+            <section className={`beginner-mode-panel ${beginner.tone}`} aria-label="Beginner Mode">
+              <div className="beginner-verdict-main">
+                <span>Beginner Mode</span>
+                <h2>{beginner.label}</h2>
+                <p>{beginner.summary}</p>
+                <div className="beginner-verdict-actions">
+                  <button disabled={demoMode || PUBLIC_SNAPSHOT_MODE || guidedAuditBusy || setupStatus?.read_only} onClick={() => void checkCurrentProject()} type="button">
+                    <SearchCheck size={15} aria-hidden="true" />
+                    {guidedAuditBusy ? "Checking" : setupStatus?.read_only ? "Read-only" : "Check this project"}
+                  </button>
+                  <button onClick={() => void showCodexFixPrompt()} type="button">
+                    <Copy size={15} aria-hidden="true" />
+                    Fix with Codex
+                  </button>
+                  <button onClick={openEvidenceReport} type="button">
+                    <FileText size={15} aria-hidden="true" />
+                    Open Evidence
+                  </button>
+                </div>
+              </div>
+              <div className="beginner-explainer">
+                <div>
+                  <span>What this means</span>
+                  <p>{beginner.meaning}</p>
+                </div>
+                <div>
+                  <span>Why AutoCore thinks this</span>
+                  <ul>
+                    {beginnerEvidence.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <span>Next action</span>
+                  <p>{beginner.nextAction}</p>
+                </div>
+              </div>
+              <div className="agent-loop-steps" aria-label="Agent workflow">
+                <span>Agent Loop</span>
+                <strong>Ask agent</strong>
+                <p>Copy the repair prompt into Codex or another coding agent.</p>
+                <strong>Verify</strong>
+                <p>Run Check this project after the agent changes code.</p>
+                <strong>Share</strong>
+                <p>Publish only after the verdict and evidence support the claim.</p>
+              </div>
+              {agentPromptDraft && (
+                <div className="codex-prompt-drawer">
+                  <div className="panel-title-row compact">
+                    <div>
+                      <span>Fix with Codex</span>
+                      <h3>Repair prompt ready</h3>
+                    </div>
+                    <Copy size={17} aria-hidden="true" />
+                  </div>
+                  <textarea aria-label="Fix with Codex prompt" readOnly value={agentPromptDraft} />
+                  <div className="setup-action-row">
+                    <button onClick={() => void copyText("Fix with Codex prompt", agentPromptDraft)} type="button">
+                      <Copy size={14} aria-hidden="true" />
+                      Copy again
+                    </button>
+                    <button onClick={() => setAgentPromptDraft(null)} type="button">
+                      Close prompt
+                    </button>
+                  </div>
+                </div>
+              )}
+            </section>
+
             <div className="setup-hero">
               <div>
                 <span>First-run setup</span>

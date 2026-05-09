@@ -6,14 +6,20 @@ AutoCore is public as `v0.1.0-alpha`. The next work is about usefulness, clarity
 
 The UI needs a clearer path for people who use AI coding tools but do not live inside software engineering terminology.
 
+Current alpha:
+
+- `Start Here` opens with a Beginner Mode verdict
+- results translate into `Safe to share`, `Needs work`, or `Do not publish yet`
+- the UI explains what the verdict means, why AutoCore thinks it, and the next action
+- `Fix with Codex` creates a copyable repair prompt for agent users
+- Lab, Policy, Connect, and raw Evidence now sit behind Advanced navigation
+
 Planned changes:
 
-- replace cockpit-first navigation with a guided `Start Here` flow
 - ask three plain questions: what repo, what are you trying to prove, what risk worries you
-- show one primary action at a time
-- translate results into `Safe to share`, `Needs work`, or `Do not publish yet`
-- include a plain-English explanation beside every score
-- keep advanced evidence views available after the simple verdict
+- show one primary action at a time across the whole flow
+- add shorter evidence summaries for people who do not read logs
+- keep reducing jargon in tabs and panels
 
 ## Priority 2: Real Personal Use
 
